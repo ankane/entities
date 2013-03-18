@@ -1,0 +1,114 @@
+doctype html
+html
+  head
+    meta charset="utf-8"
+
+    css:
+      body {
+        font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+      }
+
+      .entity {
+        height: 160px;
+        width: 160px;
+        display: inline-block;
+        border: solid 1px #eee;
+        cursor: pointer;
+        text-align: center;
+        margin-right: 20px;
+      }
+
+      .selected {
+        border-color: pink;
+      }
+
+      .symbol {
+        font-family: 'Times New Roman', Times, 'Nimbus Roman No9 L', 'Liberation Serif', serif;
+        font-size: 600%;
+        width: 100%;
+        text-align: center;
+        background-color: transparent;
+        cursor: inherit;*/
+      }
+
+      .name {
+        margin-bottom: 5px;
+      }
+
+      .shortcut {
+        font-size: 14px;
+        color: #666;
+      }
+
+  body
+    = @mac
+    #console
+    p Quickly grab entities
+
+    p With Ruby 2.0, you can use these characters directly in files.
+
+    p
+      | For the love of typography...
+      strong use correct characters
+
+    a href="http://coding.smashingmagazine.com/2011/03/14/technical-web-typography-guidelines-and-techniques/#tt-quotes" Rules
+
+    h1 style="font-family: 'Times New Roman'"
+      del "That's fine"
+      |  “That’s better”
+
+    p Click to copy
+
+    - @entities.each do |entity|
+      .entity data-clipboard-text="#{entity[:symbol]}"
+        .symbol = entity[:symbol]
+        .name = entity[:name]
+        .shortcut = entity[:shortcut]
+
+    script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"
+    script src="mousetrap.js"
+    script src="ZeroClipboard.min.js"
+
+    javascript:
+      var $console = $("#console");
+
+      $(".entity").each( function() {
+        var $this = $(this);
+        Mousetrap.bind($(".shortcut", $this).text().replace(/ /g, "+"), function(e) {
+          $(".entity").removeClass("selected");
+          $this.addClass("selected");
+          $console.text("Pressed: " + $(".symbol", $this).text())
+        });
+
+      });
+
+      var clip = new ZeroClipboard();
+
+      clip.on('noflash', function(client, args) {
+        $console.text("You don't support flash");
+      });
+
+      clip.on('wrongflash', function(client, args) {
+        $console.text("Your flash is too old " + args.flashVersion);
+      });
+
+      clip.on('load', function(client, args) {
+        clip.glue($(".entity"));
+      });
+
+      // $(document).on("mouseenter", ".entity", function() {
+      //   console.log("enter");
+      //   clip.glue(this);
+      // });
+
+      // $(document).on("mouseleave", ".entity", function() {
+      //   clip.unglue(this);
+      // });
+
+      $(document).on("click", ".entity", function() {
+        $(".symbol", this).select();
+      });
+
+      clip.on('complete', function(client, args) {
+        $console.text("Copied: " + args.text);
+      });
